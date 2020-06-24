@@ -39,6 +39,8 @@ class MessageContainer extends StatelessWidget {
 
   /// A flag which is used for assiging styles
   final bool isUser;
+  //// Used to determine if the message is a system message
+  final bool isSystem;
 
   /// Provides a list of buttons to allow the usage of adding buttons to
   /// the bottom of the message
@@ -75,6 +77,7 @@ class MessageContainer extends StatelessWidget {
     this.messageButtonsBuilder,
     this.buttons,
     this.messagePadding = const EdgeInsets.all(8.0),
+    @required this.isSystem,
   });
 
   @override
@@ -108,8 +111,7 @@ class MessageContainer extends StatelessWidget {
         padding: messagePadding,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment:
-              isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: _getCrossAxisAlignment(),
           children: <Widget>[
             if (this.textBeforeImage)
               _buildMessageText()
@@ -122,16 +124,14 @@ class MessageContainer extends StatelessWidget {
             if (buttons != null)
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment:
-                    isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+                mainAxisAlignment: _getMainAxisAlignment(),
                 mainAxisSize: MainAxisSize.min,
                 children: buttons,
               )
             else if (messageButtonsBuilder != null)
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment:
-                    isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+                mainAxisAlignment: _getMainAxisAlignment(),
                 children: messageButtonsBuilder(message),
                 mainAxisSize: MainAxisSize.min,
               ),
@@ -161,6 +161,18 @@ class MessageContainer extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  CrossAxisAlignment _getCrossAxisAlignment() {
+    return isSystem
+        ? CrossAxisAlignment.center
+        : (isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start);
+  }
+
+  MainAxisAlignment _getMainAxisAlignment() {
+    return isSystem
+        ? MainAxisAlignment.center
+        : (isUser ? MainAxisAlignment.end : MainAxisAlignment.start);
   }
 
   Widget _buildMessageText() {

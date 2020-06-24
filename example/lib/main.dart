@@ -42,11 +42,17 @@ class _MyHomePageState extends State<MyHomePage> {
     uid: "25649654",
   );
 
+  final ChatUser system = ChatUser(
+      name: "System",
+      uid: "system",
+      containerColor: Colors.white,
+      color: Colors.grey);
+
   List<ChatMessage> messages = List<ChatMessage>();
   var m = List<ChatMessage>();
 
   var i = 0;
-
+  TextEditingController textEditingController = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -74,7 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void onSend(ChatMessage message) {
     print(message.toJson());
     var documentReference = Firestore.instance
-        .collection('messages')
+        .collection('chats')
         .document(DateTime.now().millisecondsSinceEpoch.toString());
 
     Firestore.instance.runTransaction((transaction) async {
@@ -105,7 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text("Chat App"),
       ),
       body: StreamBuilder(
-          stream: Firestore.instance.collection('messages').snapshots(),
+          stream: Firestore.instance.collection('chats').snapshots(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return Center(
@@ -124,7 +130,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 inverted: false,
                 onSend: onSend,
                 sendOnEnter: true,
+                textController: textEditingController,
                 textInputAction: TextInputAction.send,
+                system: system,
                 user: user,
                 inputDecoration:
                     InputDecoration.collapsed(hintText: "Add message here..."),
@@ -184,6 +192,27 @@ class _MyHomePageState extends State<MyHomePage> {
                 showTraillingBeforeSend: true,
                 trailing: <Widget>[
                   IconButton(
+                    icon: Icon(Icons.settings_applications),
+                    onPressed: () async {
+                      ChatMessage message = ChatMessage(
+                        text: textEditingController.text,
+                        user: system,
+                      );
+
+                      var documentReference = Firestore.instance
+                          .collection('chats')
+                          .document(
+                              DateTime.now().millisecondsSinceEpoch.toString());
+
+                      Firestore.instance.runTransaction((transaction) async {
+                        await transaction.set(
+                          documentReference,
+                          message.toJson(),
+                        );
+                      });
+                    },
+                  ),
+                  IconButton(
                     icon: Icon(Icons.photo),
                     onPressed: () async {
                       File result = await ImagePicker.pickImage(
@@ -212,7 +241,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             ChatMessage(text: "", user: user, image: url);
 
                         var documentReference = Firestore.instance
-                            .collection('messages')
+                            .collection('chats')
                             .document(DateTime.now()
                                 .millisecondsSinceEpoch
                                 .toString());

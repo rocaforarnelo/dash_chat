@@ -3,6 +3,7 @@ part of dash_chat;
 class MessageListView extends StatefulWidget {
   final List<ChatMessage> messages;
   final ChatUser user;
+  final ChatUser system;
   final bool showuserAvatar;
   final DateFormat dateFormat;
   final DateFormat timeFormat;
@@ -71,7 +72,8 @@ class MessageListView extends StatefulWidget {
       this.showLoadMore,
       this.messageButtonsBuilder,
       this.messagePadding = const EdgeInsets.all(8.0),
-      this.textBeforeImage = true});
+      this.textBeforeImage = true,
+      @required this.system});
 
   @override
   _MessageListViewState createState() => _MessageListViewState();
@@ -189,10 +191,13 @@ class _MessageListViewState extends State<MessageListView> {
                               bottom: last ? 10.0 : 0.0,
                             ),
                             child: Row(
-                              mainAxisAlignment:
-                                  widget.messages[i].user.uid == widget.user.uid
+                              mainAxisAlignment: widget.messages[i].user.uid ==
+                                      widget.system.uid
+                                  ? MainAxisAlignment.center
+                                  : (widget.messages[i].user.uid ==
+                                          widget.user.uid
                                       ? MainAxisAlignment.end
-                                      : MainAxisAlignment.start,
+                                      : MainAxisAlignment.start),
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: <Widget>[
                                 Padding(
@@ -200,12 +205,15 @@ class _MessageListViewState extends State<MessageListView> {
                                     horizontal: constraints.maxWidth * 0.02,
                                   ),
                                   child: Opacity(
-                                    opacity: (widget.showAvatarForEverMessage ||
-                                                showAvatar) &&
-                                            widget.messages[i].user.uid !=
-                                                widget.user.uid
-                                        ? 1
-                                        : 0,
+                                    opacity: widget.messages[i].user.uid ==
+                                            widget.system.uid
+                                        ? 0
+                                        : ((widget.showAvatarForEverMessage ||
+                                                    showAvatar) &&
+                                                widget.messages[i].user.uid !=
+                                                    widget.user.uid
+                                            ? 1
+                                            : 0),
                                     child: AvatarContainer(
                                       user: widget.messages[i].user,
                                       onPress: widget.onPressAvatar,
@@ -256,9 +264,13 @@ class _MessageListViewState extends State<MessageListView> {
                                         : Align(
                                             alignment:
                                                 widget.messages[i].user.uid ==
-                                                        widget.user.uid
-                                                    ? Alignment.centerRight
-                                                    : Alignment.centerLeft,
+                                                        widget.system.uid
+                                                    ? Alignment.center
+                                                    : (widget.messages[i].user
+                                                                .uid ==
+                                                            widget.user.uid
+                                                        ? Alignment.centerRight
+                                                        : Alignment.centerLeft),
                                             child: MessageContainer(
                                               messagePadding:
                                                   widget.messagePadding,
@@ -284,6 +296,10 @@ class _MessageListViewState extends State<MessageListView> {
                                                   widget.messageButtonsBuilder,
                                               textBeforeImage:
                                                   widget.textBeforeImage,
+                                              isSystem: widget.system != null &&
+                                                  widget.system.uid ==
+                                                      widget
+                                                          .messages[i].user.uid,
                                             ),
                                           ),
                                   ),
@@ -294,13 +310,7 @@ class _MessageListViewState extends State<MessageListView> {
                                       horizontal: constraints.maxWidth * 0.02,
                                     ),
                                     child: Opacity(
-                                      opacity:
-                                          (widget.showAvatarForEverMessage ||
-                                                      showAvatar) &&
-                                                  widget.messages[i].user.uid ==
-                                                      widget.user.uid
-                                              ? 1
-                                              : 0,
+                                      opacity: getAvatarOpacity(showAvatar, i),
                                       child: AvatarContainer(
                                         user: widget.messages[i].user,
                                         onPress: widget.onPressAvatar,
@@ -351,5 +361,14 @@ class _MessageListViewState extends State<MessageListView> {
         ),
       ),
     );
+  }
+
+  double getAvatarOpacity(bool showAvatar, int i) {
+    return widget.messages[i].user.uid == widget.system.uid
+        ? 0
+        : ((widget.showAvatarForEverMessage || showAvatar) &&
+                widget.messages[i].user.uid == widget.user.uid
+            ? 1
+            : 0);
   }
 }

@@ -40,6 +40,9 @@ class DashChat extends StatefulWidget {
   /// i.e [TextEditingController] and will use this to update the
   /// text input field.
   final String text;
+  //If provided, messages from system will be received
+  //and displayed center of the list
+  final ChatUser system;
 
   /// If the text parameter is passed then onTextChange must also
   /// be passed.
@@ -340,6 +343,7 @@ class DashChat extends StatefulWidget {
     this.messageButtonsBuilder,
     this.messagePadding = const EdgeInsets.all(8.0),
     this.textBeforeImage = true,
+    this.system,
   }) : super(key: key) {
     this.scrollToBottomStyle = scrollToBottomStyle ?? new ScrollToBottomStyle();
   }
@@ -469,6 +473,7 @@ class DashChatState extends State<DashChat> {
                     onLoadEarlier: widget.onLoadEarlier,
                     defaultLoadCallback: changeDefaultLoadMore,
                     messageContainerPadding: widget.messageContainerPadding,
+                    system: widget.system,
                     scrollController: widget.scrollController != null
                         ? widget.scrollController
                         : scrollController,
@@ -497,7 +502,8 @@ class DashChatState extends State<DashChat> {
                     messageButtonsBuilder: widget.messageButtonsBuilder,
                   ),
                   if (widget.messages.length != 0 &&
-                      widget.messages.last.user.uid != widget.user.uid)
+                      widget.messages.last.user.uid != widget.user.uid &&
+                      widget.messages.last.user.uid != widget.system.uid)
                     Container(
                       padding: widget.quickReplyPadding,
                       constraints: BoxConstraints(
